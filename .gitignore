@@ -1,0 +1,19 @@
+# gitignore template for Jupyter Notebooks
+# website: http://jupyter.org/
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Python
+__pycache__
+
+# LabLidar folders
+data/in/test/*
+data/out/test/*
+figs/TylerXS/*
+scripts/PB/*
+scripts/Plotting/*

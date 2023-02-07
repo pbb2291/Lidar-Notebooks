@@ -1,5 +1,4 @@
 # Lidar-Notebooks
-<<<<<<< HEAD
 A series of jupyter notebook pipelines for processing highly detailed lidar point clouds (LAS or LAZ files) and deriving vegetation structure metrics. 
 
 ### Processing Pipeline Scripts and What they do:
@@ -20,5 +19,4 @@ A series of jupyter notebook pipelines for processing highly detailed lidar poin
     - *2-ProcessVoxelMetrics* - Voxelizes each clipped las file at the desired resolution, computes metrics for each voxel, and outputs pickle files.
     - *3-OutputVoxelMetrics_Geotiff_NetCDF* - Reads pickle files and outputs rasters as geotif files and voxel metrics as netcdf files for use in other GIS software.  
 =======
-A series of jupyter notebook pipelines for processing lidar point clouds (LAS files) and deriving vegetation structure metrics. 
->>>>>>> fe04a9becf025cf57a8e263dc9a912a3af6395e5
+

@@ -1,5 +1,4 @@
-# gitignore template for Jupyter Notebooks
-# website: http://jupyter.org/
+# Follows the gitignore template for Jupyter Notebooks
 
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
@@ -10,6 +9,7 @@ ipython_config.py
 
 # Python
 __pycache__
+.idea/
 
 # LabLidar folders
 data/in/test/*

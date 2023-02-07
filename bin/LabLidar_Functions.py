@@ -25,7 +25,7 @@ plt.rcParams.update({'font.size': 14})
 
 # Make Shapefile Boundary from las file header
 # PB 9/30/22
-def lasBBoxShp(lasf, epsg='32737', opath=None):
+def lasBBoxShp(lasf, epsg='32737', opath=None, fext='.las'):
     
     lasf = Path(lasf)
 
@@ -50,7 +50,7 @@ def lasBBoxShp(lasf, epsg='32737', opath=None):
             opath = str(lasf.parent)
             
         # Set output file names
-        lasname = str(lasf.name).split('.las')[0]
+        lasname = str(lasf.name).split(fext)[0]
         shpf = f'{opath}/{lasname}.shp'
         
         # Export
@@ -126,6 +126,115 @@ def calcLasHeight(inf, opath=None, of=None, buffer=0):
             "in.las",
             {
                 "type":"filters.hag_delaunay",
+                "count": 10,
+                "allow_extrapolation": true
+            },
+            {
+                "type":"filters.crop",
+                "bounds":"([xmin,xmax],[ymin,ymax])"
+            },
+            {
+                "type": "writers.las",
+                "filename": "out.las",
+                "extra_dims": "HeightAboveGround=float32"
+            }
+        ]
+        """
+        
+        # Replace bounds with values of xmin, xmax, ymin, ymax
+        # clipped by buffer
+        injson = injson.replace("xmin", str(xmin))
+        injson = injson.replace("xmax", str(xmax))
+        injson = injson.replace("ymin", str(ymin))
+        injson = injson.replace("ymax", str(ymax))
+        
+    # Replace args with in and out file
+    injson = injson.replace("in.las", str(inf))
+    injson = injson.replace("out.las", str(of))
+
+    pipeline = pdal.Pipeline(injson)
+    pipeline.execute()
+    # arrays = pipeline.arrays
+    metadata = pipeline.metadata
+    # log = pipeline.log
+    
+    return metadata
+
+
+# Define normalize height function
+# Uses HAG nearest neighbors instead of HAG delaunay 
+# Even those this seems to be more prone to errors in ground,
+# ie. sensitive to spots where the ground points jump up into the vegetation
+# it does not throw colinear errors
+# for consistency, run it on all point clouds (not just the ones that throw colinear errors)
+# https://pdal.io/en/stable/stages/filters.hag_nn.html?highlight=hag_nn
+# implemented 10/21/2022
+# Note: added a "buffer" option
+# this would be the distance that needs to be clipped from the edge of a las file
+# for instance, if las tiles overlap by 20 m
+# then the buffer value would be 20/2 = 10 m
+# NOTE: the buffer value here assumes an input of rectangular tiles with equal buffers on all sides
+# PB 10/03/22
+def calcLasHeight_HagNN(inf, opath=None, of=None, buffer=0):
+    
+    inf = Path(str(inf))
+
+    # If no outfile name or dir, make one in the same dir
+    if not of:
+
+        of = inf.name
+        
+    if not opath:
+        
+        opath = inf.parent
+        
+    else:
+        
+        opath = Path(opath)
+    
+    # If there's no buffer to clip
+    if buffer==0:
+        
+        of = Path(str(opath) + '/' + inf.name.split('.')[0] + "_Height.las")
+        
+        # define injson for pdal pipeline
+        injson= """
+        [
+            "in.las",
+            {
+                "type":"filters.hag_nn",
+                "count": 10,
+                "allow_extrapolation": true
+            },
+            {
+                "type": "writers.las",
+                "filename": "out.las",
+                "extra_dims": "HeightAboveGround=float32"
+            }
+        ]
+        """
+        
+    # else: if there is a buffer to clip
+    else:
+        
+        of = Path(str(opath) + '/' + inf.name.split('.')[0] + "_Height.las")
+        
+        # open the header of the file in laspy
+        # to get coordinates boundaries from the header
+        l = laspy.open(str(inf))
+        
+        # Take away the buffer region from the boundary
+        xmin = l.header.mins[0] + buffer
+        xmax = l.header.maxs[0] - buffer
+        ymin = l.header.mins[1] + buffer
+        ymax = l.header.maxs[1] - buffer
+        
+        # define injson for pdal pipeline
+        injson= """
+        [
+            "in.las",
+            {
+                "type":"filters.hag_nn",
                 "count": 10,
                 "allow_extrapolation": true
             },
@@ -484,6 +593,7 @@ def calccover(points=None,
 
             # D2 - sum the weights of first returns above the griven height h
             w = sum( weights[(zfirst_veg <= hmax) & (zfirst_veg > h)] )
+            
             # Divide by the total number of 1st returns (aka: pulses)
             coverD2.append( w / N )
         
@@ -502,7 +612,7 @@ def calccover(points=None,
     
     # new (should be correct!!!) version - 7/20/22
     # Get the cover difference in each voxel 
-    # *-1 becase numpy does the difference backwards (top-to-bottom instead of bottom-top)
+    # *-1 becase numpy does the difference backwards ((i+1)-(i) instead of (i) - (i+1))
     coverD1byH = -np.diff(coverD1)
     coverD2byH = -np.diff(coverD2)
     

@@ -1,5 +1,5 @@
 # Lidar-Notebooks
-A series of jupyter notebook pipelines for processing highly detailed lidar point clouds (LAS or LAZ files) and deriving vegetation structure metrics. Draws on tools in a variety of other packages (such as geopandas, laspy, PDAL, rasterio, xarray, rioxarray, and concurrent.futures). <p>
+A series of jupyter notebook pipelines for processing highly detailed lidar point clouds (LAS or LAZ files) and deriving vegetation structure metrics. Draws on tools from a variety of other packages (such as geopandas, laspy, PDAL, rasterio, xarray, rioxarray, and concurrent.futures). <p>
 
 ### Pipelines, scripts, and what they do:
 

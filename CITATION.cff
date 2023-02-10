@@ -1,0 +1,9 @@
+cff-version: 1.1.0
+message: "If you use this software for a publication, please cite it as below."
+authors:
+  - family-names: Boucher
+    given-names: Peter Brehm
+    orcid: https://orcid.org/0000-0003-2585-6705
+title: pbb2291/Lidar-Notebooks: Version 1 Release
+version: v1.0.0
+date-released: 2023-02-07
